@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>申込番号発行ツール</title>
+<style>
+  :root{
+    --navy:#d489a1;
+    --navy-deep:#b56584;
+    --gold:#a1657d;
+    --gold-light:#f6dbe4;
+    --paper:#fffaf9;
+    --ink:#4a3540;
+    --line:#f3dde3;
+    --friend:#e2a4bb;
+    --family:#955c73;
+    --danger:#c1584f;
+    --ink-soft:#6b5762;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Hiragino Sans","Yu Gothic",sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  header{
+    text-align:center;
+    margin-bottom:28px;
+  }
+  .eyebrow{
+    letter-spacing:.3em;
+    font-size:11px;
+    color:var(--gold);
+    font-weight:700;
+  }
+  h1{
+    font-size:24px;
+    margin:6px 0 4px;
+    color:var(--navy);
+    font-weight:800;
+  }
+  .sub{font-size:13px;color:var(--ink-soft);}
+  .privacy-note{
+    background:#fdeef1;
+    border:1px solid #eec3d1;
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:12.5px;
+    color:#7a3350;
+    margin-bottom:20px;
+    line-height:1.6;
+  }
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:20px;
+    background:#fbeaf0;
+    padding:5px;
+    border-radius:12px;
+  }
+  .tab{
+    flex:1;
+    text-align:center;
+    padding:10px 8px;
+    border-radius:9px;
+    cursor:pointer;
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink-soft);
+    transition:.15s;
+    user-select:none;
+  }
+  .tab.active{
+    background:var(--navy);
+    color:#fff;
+  }
+  .card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px;
+    margin-bottom:16px;
+  }
+  .field{margin-bottom:14px;}
+  label{
+    display:block;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--navy);
+    margin-bottom:6px;
+  }
+  input[type=text], input[type=number], select{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:15px;
+    background:#fffefb;
+    color:var(--ink);
+  }
+  input:focus, select:focus{
+    outline:2px solid var(--gold-light);
+    border-color:var(--gold);
+  }
+  .password-input-large{
+    font-size:22px !important;
+    padding:13px 14px !important;
+    text-align:center;
+    letter-spacing:.2em;
+    font-family:"SF Mono",Consolas,monospace;
+    font-weight:800;
+    border:2px solid var(--line) !important;
+    border-radius:10px !important;
+  }
+  .password-input-large:focus{
+    border-color:var(--navy) !important;
+    outline:3px solid var(--gold-light) !important;
+  }
+  .row3{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:10px;
+  }
+  .guest-row{
+    display:grid;
+    grid-template-columns:28px 1fr auto;
+    align-items:center;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .guest-row:last-child{border-bottom:none;}
+  .guest-num{
+    width:28px;height:28px;
+    border-radius:50%;
+    background:var(--navy);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:700;
+  }
+  .rel-toggle{display:flex;gap:6px;}
+  .rel-btn{
+    flex:1;
+    padding:8px 4px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    background:#fff;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    color:var(--ink-soft);
+  }
+  .rel-btn.sel-family{background:var(--family);border-color:var(--family);color:#fff;}
+  .rel-btn.sel-friend{background:var(--friend);border-color:var(--friend);color:var(--navy-deep);}
+  .icon-btn{
+    background:none;border:none;
+    color:var(--danger);
+    font-size:18px;
+    cursor:pointer;
+    width:28px;
+  }
+  .add-guest-btn{
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    border-radius:8px;
+    border:1px dashed var(--gold);
+    background:#fdeef1;
+    color:var(--navy);
+    font-weight:700;
+    font-size:13.5px;
+    cursor:pointer;
+  }
+  .add-guest-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .primary-btn{
+    width:100%;
+    padding:14px;
+    border-radius:10px;
+    border:none;
+    background:var(--navy);
+    color:#fff;
+    font-size:15px;
+    font-weight:800;
+    letter-spacing:.05em;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  .primary-btn:hover{background:var(--navy-deep);}
+  .primary-btn:disabled{background:#b8bcc9;cursor:not-allowed;}
+  .error{
+    color:var(--danger);
+    font-size:12.5px;
+    margin-top:8px;
+    font-weight:700;
+  }
+  .result{
+    background:#fbe6ec;
+    color:var(--ink);
+    border:1px solid #f0cddb;
+    border-radius:16px;
+    padding:22px;
+    margin-top:4px;
+  }
+  .result .base{
+    font-size:12px;
+    letter-spacing:.2em;
+    color:var(--navy-deep);
+    font-weight:700;
+  }
+  .base-number{
+    font-family:"SF Mono",Consolas,monospace;
+    font-size:34px;
+    font-weight:800;
+    letter-spacing:.06em;
+    margin:4px 0 16px;
+    color:var(--navy-deep);
+  }
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th,td{
+    text-align:left;
+    padding:9px 6px;
+    border-bottom:1px solid #eecddb;
+  }
+  th{color:var(--navy-deep);font-weight:700;font-size:12px;}
+  .num-code{font-family:"SF Mono",Consolas,monospace;font-weight:800;font-size:21px;color:var(--navy-deep);}
+
+  .tag{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:20px;
+    font-size:11.5px;
+    font-weight:700;
+  }
+  .tag.family{background:var(--family);color:#fff;}
+  .tag.friend{background:var(--friend);color:var(--navy-deep);}
+  .copy-btn{
+    margin-top:16px;
+    width:100%;
+    padding:11px;
+    border-radius:8px;
+    border:1px solid var(--gold);
+    background:transparent;
+    color:var(--gold-light);
+    font-weight:700;
+    cursor:pointer;
+  }
+  .copy-btn:hover{background:rgba(255,255,255,.08);}
+  .copied{color:#8fd6b8 !important;}
+  .hint{font-size:12px;color:var(--ink-soft);margin-top:14px;line-height:1.6;}
+  .divider{height:1px;background:var(--line);margin:22px 0;}
+  .small-note{font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+
+  .checklist-label{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    cursor:pointer;
+    padding:14px 0;
+  }
+  .checklist-label input[type=checkbox]{
+    width:20px;height:20px;
+    margin-top:2px;
+    flex-shrink:0;
+    accent-color:var(--navy);
+    cursor:pointer;
+  }
+  .item-title{
+    display:block;
+    font-size:14px;
+    color:var(--navy);
+    margin-bottom:6px;
+  }
+  .notice-block{padding:4px 0;}
+  .notice-desc{
+    font-size:13px;
+    color:var(--ink);
+    line-height:1.7;
+  }
+
+  .step-list{display:flex;flex-direction:column;}
+  .step-item{
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    padding:11px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .step-item:last-child{border-bottom:none;}
+  .step-num{
+    width:26px;height:26px;
+    border-radius:50%;
+    background:var(--navy);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;
+    flex-shrink:0;
+  }
+  .step-text{
+    font-size:13.5px;
+    color:var(--ink);
+    line-height:1.6;
+    padding-top:4px;
+  }
+  .step-text b{color:var(--navy-deep);}
+  .notice-desc b{
+    color:var(--navy-deep);
+    font-weight:800;
+  }
+
+  .notify-banner{
+    background:rgba(255,255,255,.7);
+    border:1px solid var(--navy-deep);
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:13px;
+    margin-top:16px;
+    display:flex;gap:10px;align-items:flex-start;
+    color:var(--navy-deep);
+    line-height:1.6;
+  }
+  .notify-banner .emoji{font-size:18px;}
+  .notify-banner b{color:#4a2338;}
+
+  /* screenshot + forms CTA */
+  .screenshot-banner{
+    background:rgba(255,255,255,.6);
+    border:1px dashed var(--navy-deep);
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:13px;
+    margin-top:16px;
+    display:flex;gap:10px;align-items:flex-start;
+    color:var(--ink);
+  }
+  .screenshot-banner .emoji{font-size:18px;}
+  .forms-cta{
+    margin-top:14px;
+    background:var(--gold);
+    border-radius:12px;
+    padding:16px 18px;
+    text-align:center;
+  }
+  .forms-cta .cta-title{
+    font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;
+  }
+  .forms-cta .cta-text{
+    font-size:12.5px;color:var(--gold-light);line-height:1.6;margin-bottom:12px;
+  }
+  .forms-cta .cta-btn{
+    display:inline-block;
+    background:#fff;
+    color:var(--gold);
+    font-weight:800;
+    font-size:14px;
+    padding:11px 26px;
+    border-radius:8px;
+    text-decoration:none;
+    border:none;
+    cursor:pointer;
+  }
+  .forms-cta .cta-btn:hover{background:var(--gold-light);}
+</style>
+</head>
+<body>
+
+<!-- STEP 1: パスワード -->
+<div class="wrap" id="gatePassword">
+  <header>
+    <div class="eyebrow">ENTRY NUMBER ISSUER</div>
+    <h1>申込番号発行ツール</h1>
+    <div class="sub">はじめに、合言葉(パスワード)を入力してください</div>
+  </header>
+  <div class="card">
+    <div class="field">
+      <label style="font-size:15px;margin-bottom:10px;">パスワード</label>
+      <input type="password" id="gatePasswordInput" class="password-input-large" placeholder="●●●●" onkeydown="if(event.key==='Enter')checkPassword()">
+    </div>
+    <div class="error" id="gatePasswordError" style="font-size:14px;text-align:center;"></div>
+    <button class="primary-btn" onclick="checkPassword()">① 進む</button>
+  </div>
+</div>
+
+<!-- STEP 2: 注意事項 -->
+<div class="wrap" id="gateNotice" style="display:none;">
+  <header>
+    <div class="eyebrow">GUIDE</div>
+    <h1>ご利用前の確認</h1>
+    <div class="sub">はじめにお読みください</div>
+  </header>
+
+  <div class="card">
+    <b class="item-title">文化祭の招待者申し込みとは</b>
+    <div class="notice-desc">
+      文化祭に招待する家族・友達の入場整理番号を発行するためのツールです。学年・クラス・出席番号ごとに、招待する人(最大5人まで)の番号を発行し、その番号をMicrosoft Formsに登録することで正式な申し込みになります。当日は、招待された方がこの番号を受付で伝えることで入場できます。
+    </div>
+  </div>
+
+  <div class="card">
+    <b class="item-title" style="margin-bottom:16px;">手順</b>
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-text">このツールで<b>申込番号を発行</b>する</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-text">画面を<b>スクリーンショット</b>、または番号を<b>メモ</b>する</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-text"><b>Microsoft Forms</b>に学年・クラス・関係性・番号を入力して送信する</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-text">招待した人<b>ひとりひとり</b>に、それぞれの番号を伝える</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-text">追加・削除が必要なときは「番号の追加・削除」タブから行う(その場合は<b>Formsを再登録</b>)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <label class="checklist-label">
+      <input type="checkbox" id="noticeConfirm" onchange="updateNoticeBtn()">
+      <span>上記の内容を確認しました</span>
+    </label>
+
+    <div class="error" id="noticeError"></div>
+    <button class="primary-btn" id="noticeNextBtn" onclick="proceedToApp()" disabled>② 確認しました。進む</button>
+  </div>
+</div>
+
+<!-- STEP 3: 通常のタスク -->
+<div class="wrap" id="appWrap" style="display:none;">
+  <header>
+    <div class="eyebrow">ENTRY NUMBER ISSUER</div>
+    <h1>申込番号発行ツール</h1>
+    <div class="sub">Formsに入力する前に、ここで申込番号を発行してください</div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" id="tab-new" onclick="switchTab('new')">新規申込</div>
+    <div class="tab" id="tab-edit" onclick="switchTab('edit')">番号の追加・削除</div>
+  </div>
+
+  <!-- NEW APPLICATION -->
+  <div id="panel-new">
+    <div class="card">
+      <div class="row3">
+
+        <div class="field">
+          <label>学年</label>
+          <select id="grade">
+            <option value="1">1年</option>
+            <option value="2">2年</option>
+            <option value="3">3年</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>クラス</label>
+          <select id="klass">
+            <option>A</option><option>B</option><option>C</option>
+            <option>D</option><option>E</option><option>F</option>
+            <option>G</option><option>H</option><option>I</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>出席番号</label>
+          <input type="number" id="stuNum" min="1" placeholder="例: 12">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <label style="margin-bottom:10px;">誘う人(最大5人まで)</label>
+      <div id="guestList"></div>
+      <button class="add-guest-btn" id="addGuestBtn" onclick="addGuest()">＋ 誘う人を追加</button>
+      <div class="error" id="newError"></div>
+      <button class="primary-btn" onclick="generateNew()">申込番号を発行する</button>
+    </div>
+
+    <div class="card result" id="newResult" style="display:none;"></div>
+  </div>
+
+  <!-- ADD / DELETE -->
+  <div id="panel-edit" style="display:none;">
+    <div class="card">
+      <div class="tabs" style="margin-bottom:18px;">
+        <div class="tab active" id="mode-add" onclick="switchEditMode('add')">追加する</div>
+        <div class="tab" id="mode-del" onclick="switchEditMode('del')">削除する</div>
+      </div>
+
+      <!-- 追加 -->
+      <div id="addBlock">
+        <div class="field">
+          <label>① すでに発行された申込番号(上7桁:学年+クラス番号+出席番号+乱数3桁)</label>
+          <input type="text" id="addBase" maxlength="7" placeholder="例: 2315847">
+        </div>
+        <div class="field">
+          <label>② 今まで登録していた人数</label>
+          <select id="addPrevCount">
+            <option value="1">1人</option>
+            <option value="2">2人</option>
+            <option value="3">3人</option>
+            <option value="4">4人</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>③ 追加する人数(合計5人になるようにしてください)</label>
+          <select id="addCount"></select>
+        </div>
+
+        <div class="divider"></div>
+        <label style="margin-bottom:10px;">追加する人の関係性</label>
+        <div id="addGuestList"></div>
+      </div>
+
+      <!-- 削除 -->
+      <div id="delBlock" style="display:none;">
+        <div class="field">
+          <label>① すでに発行された申込番号(フルで入力、8桁)</label>
+          <input type="text" id="delFull" maxlength="8" placeholder="例: 23158471">
+        </div>
+      </div>
+
+      <div class="error" id="editError"></div>
+      <button class="primary-btn" onclick="generateEdit()" id="editSubmitBtn">④ 追加する</button>
+    </div>
+
+    <div class="card result" id="editResult" style="display:none;"></div>
+  </div>
+
+  <div class="hint">
+    ※ 申込番号は「学年(1桁)+クラス番号(1桁、A=1〜I=9)+出席番号(2桁)+乱数3桁+枝番1桁」の計8桁の数字です。学年・クラス・出席番号が一致していれば、番号が他の生徒とかぶることはほぼありません。
+  </div>
+</div>
+
+<script>
+let guests = []; // {id, relation}
+let guestSeq = 0;
+let addGuests = []; // {relation} for the "追加" flow
+
+// 管理者用: ここに合言葉(パスワード)を設定してください。
+// 空欄のままにすると、パスワード画面はスキップされます。
+// ※このパスワードはページのソース上に見える形で置かれるため、強固な認証ではなく
+//   「知っている人だけが進める簡易的な壁」としてご利用ください。
+const SITE_PASSWORD = '0717';
+
+function checkPassword(){
+  const input = document.getElementById('gatePasswordInput').value;
+  const err = document.getElementById('gatePasswordError');
+  if(SITE_PASSWORD && input !== SITE_PASSWORD){
+    err.textContent = 'パスワードが違います。';
+    return;
+  }
+  err.textContent = '';
+  document.getElementById('gatePassword').style.display = 'none';
+  document.getElementById('gateNotice').style.display = 'block';
+}
+
+function updateNoticeBtn(){
+  document.getElementById('noticeNextBtn').disabled = !document.getElementById('noticeConfirm').checked;
+}
+
+function proceedToApp(){
+  document.getElementById('gateNotice').style.display = 'none';
+  document.getElementById('appWrap').style.display = 'block';
+}
+
+// パスワード未設定の場合は、パスワード画面を飛ばして注意事項から始める
+if(!SITE_PASSWORD){
+  document.getElementById('gatePassword').style.display = 'none';
+  document.getElementById('gateNotice').style.display = 'block';
+}
+
+// 管理者用: 学校のMicrosoft FormsのURLをここに設定すると、
+// 結果画面に「Formsを開く」ボタンが表示されます。空欄のままでもツールは使えます。
+const FORMS_URL = 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=3meRRyNrWEOYBlpq_Yo7xIr-YI3kEA5Pj5p1LJ-qMP1UOEVVUUhLUFQ3QTlLSDVQMzRVODdBQ0hZUy4u';
+
+function formsCtaHTML(message){
+  const btnHTML = FORMS_URL
+    ? `<a class="cta-btn" href="${FORMS_URL}" target="_blank" rel="noopener">Formsを開いて回答する</a>`
+    : `<button class="cta-btn" disabled title="管理者がFormsのURLを設定するとここから開けます">Formsを開いて回答する</button>`;
+  return `
+    <div class="forms-cta">
+      <div class="cta-title">最後にMicrosoft Formsへの回答をお願いします</div>
+      <div class="cta-text">${message}</div>
+      ${btnHTML}
+    </div>`;
+}
+
+function switchTab(t){
+  document.getElementById('tab-new').classList.toggle('active', t==='new');
+  document.getElementById('tab-edit').classList.toggle('active', t==='edit');
+  document.getElementById('panel-new').style.display = t==='new' ? 'block':'none';
+  document.getElementById('panel-edit').style.display = t==='edit' ? 'block':'none';
+  if(t==='edit') switchEditMode('add');
+}
+
+function switchEditMode(m){
+  document.getElementById('mode-add').classList.toggle('active', m==='add');
+  document.getElementById('mode-del').classList.toggle('active', m==='del');
+  document.getElementById('addBlock').style.display = m==='add' ? 'block':'none';
+  document.getElementById('delBlock').style.display = m==='del' ? 'block':'none';
+  document.getElementById('editSubmitBtn').textContent = m==='add' ? '④ 追加する' : '② 削除する';
+  document.getElementById('editResult').style.display='none';
+  document.getElementById('editError').textContent = '';
+  if(m==='add') populateAddCountOptions();
+}
+
+function renderGuests(){
+  const list = document.getElementById('guestList');
+  list.innerHTML = '';
+  guests.forEach((g, idx)=>{
+    const row = document.createElement('div');
+    row.className = 'guest-row';
+    row.innerHTML = `
+      <div class="guest-num">${idx+1}</div>
+      <div class="rel-toggle">
+        <button class="rel-btn ${g.relation==='family'?'sel-family':''}" onclick="setGuestRel(${g.id},'family')">家族</button>
+        <button class="rel-btn ${g.relation==='friend'?'sel-friend':''}" onclick="setGuestRel(${g.id},'friend')">友達</button>
+      </div>
+      <button class="icon-btn" onclick="removeGuest(${g.id})" title="削除">✕</button>
+    `;
+    list.appendChild(row);
+  });
+  document.getElementById('addGuestBtn').disabled = guests.length >= 5;
+}
+
+function addGuest(){
+  if(guests.length >= 5) return;
+  guests.push({id: guestSeq++, relation: null});
+  renderGuests();
+}
+function removeGuest(id){
+  guests = guests.filter(g=>g.id!==id);
+  renderGuests();
+}
+function setGuestRel(id, rel){
+  guests = guests.map(g=> g.id===id ? {...g, relation: rel} : g);
+  renderGuests();
+}
+
+// ---- 「追加」フロー用 ----
+function populateAddCountOptions(){
+  const prev = parseInt(document.getElementById('addPrevCount').value, 10);
+  const max = 5 - prev;
+  const sel = document.getElementById('addCount');
+  const prevSelected = sel.value;
+  sel.innerHTML = '';
+  for(let i=1;i<=max;i++){
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${i}人`;
+    sel.appendChild(opt);
+  }
+  sel.value = (prevSelected && parseInt(prevSelected,10) <= max) ? prevSelected : '1';
+  renderAddGuests();
+}
+document.getElementById('addPrevCount').addEventListener('change', populateAddCountOptions);
+document.getElementById('addCount').addEventListener('change', renderAddGuests);
+
+function renderAddGuests(){
+  const prev = parseInt(document.getElementById('addPrevCount').value, 10);
+  const count = parseInt(document.getElementById('addCount').value, 10);
+  // addGuestsの人数をcountに合わせる(既存の選択はできる限り保持)
+  while(addGuests.length < count) addGuests.push({relation:null});
+  while(addGuests.length > count) addGuests.pop();
+
+  const list = document.getElementById('addGuestList');
+  list.innerHTML = '';
+  addGuests.forEach((g, idx)=>{
+    const slotNum = prev + idx + 1;
+    const row = document.createElement('div');
+    row.className = 'guest-row';
+    row.innerHTML = `
+      <div class="guest-num">${slotNum}</div>
+      <div class="rel-toggle">
+        <button class="rel-btn ${g.relation==='family'?'sel-family':''}" onclick="setAddGuestRel(${idx},'family')">家族</button>
+        <button class="rel-btn ${g.relation==='friend'?'sel-friend':''}" onclick="setAddGuestRel(${idx},'friend')">友達</button>
+      </div>
+      <div></div>
+    `;
+    list.appendChild(row);
+  });
+}
+function setAddGuestRel(idx, rel){
+  addGuests[idx] = {relation: rel};
+  renderAddGuests();
+}
+
+// 学年・クラス・出席番号(最大50番)を16進数3桁にエンコードする
+// 学年+クラス+出席番号(2桁)+乱数3桁 のベース番号を作る
+function buildBase(grade, klass, stuNum){
+  const classNum = klass.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0) + 1; // A=1, B=2 ... I=9
+  const stuNumPadded = String(parseInt(stuNum,10)).padStart(2,'0');
+  const random3 = String(Math.floor(Math.random()*1000)).padStart(3,'0');
+  return `${grade}${classNum}${stuNumPadded}${random3}`;
+}
+
+function generateNew(){
+  const err = document.getElementById('newError');
+  err.textContent = '';
+  const grade = document.getElementById('grade').value;
+  const klass = document.getElementById('klass').value;
+  const stuNum = document.getElementById('stuNum').value;
+
+  if(!stuNum){ err.textContent = '出席番号を入力してください。'; return; }
+  if(guests.length === 0){ err.textContent = '誘う人を1人以上追加してください。'; return; }
+  if(guests.some(g=>!g.relation)){ err.textContent = 'すべての人について関係性(家族/友達)を選んでください。'; return; }
+
+  const base = buildBase(grade, klass, stuNum);
+  const rows = guests.map((g, idx)=>({
+    num: `${base}${idx+1}`,
+    relation: g.relation
+  }));
+
+  const box = document.getElementById('newResult');
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div class="base">申込者: ${grade}年${klass}組 出席番号${stuNum}番</div>
+    <table>
+      <tr><th>No.</th><th>申込番号</th><th>関係性</th></tr>
+      ${rows.map((r,i)=>`<tr>
+        <td>${i+1}</td>
+        <td class="num-code">${r.num}</td>
+        <td><span class="tag ${r.relation}">${r.relation==='family'?'家族':'友達'}</span></td>
+      </tr>`).join('')}
+    </table>
+
+    <div class="notify-banner">
+      <span class="emoji">📣</span>
+      <span>上の番号は<b>1人ずつ違う番号</b>です。招待するご本人お一人お一人に、それぞれの番号を必ず個別にお伝えください。</span>
+    </div>
+
+    <div class="screenshot-banner">
+      <span class="emoji">📸</span>
+      <span>この画面のスクリーンショットを撮っておきましょう。この後Formsに入力する際に必要になります。</span>
+    </div>
+
+    ${formsCtaHTML('学年・クラス・出席番号・関係性・上の申込番号を、Microsoft Formsに入力して送信してください。')}
+  `;
+}
+
+function generateEdit(){
+  const err = document.getElementById('editError');
+  err.textContent = '';
+  const isAdd = document.getElementById('mode-add').classList.contains('active');
+  const box = document.getElementById('editResult');
+
+  if(isAdd){
+    const base = document.getElementById('addBase').value.trim().toUpperCase();
+    const prev = parseInt(document.getElementById('addPrevCount').value, 10);
+    if(!/^\d{7}$/.test(base)){ err.textContent = '①には7桁の数字(学年1桁+クラス番号1桁+出席番号2桁+乱数3桁)で入力してください。例: 2315847'; return; }
+    if(addGuests.length === 0 || addGuests.some(g=>!g.relation)){ err.textContent = '追加する人全員の関係性(家族/友達)を選んでください。'; return; }
+
+    const rows = addGuests.map((g, idx)=>({
+      num: `${base}${prev+idx+1}`,
+      relation: g.relation
+    }));
+
+    box.style.display = 'block';
+    box.innerHTML = `
+      <div class="base">追加する番号</div>
+      <table>
+        <tr><th>No.</th><th>申込番号</th><th>関係性</th></tr>
+        ${rows.map((r,i)=>`<tr>
+          <td>${prev+i+1}</td>
+          <td class="num-code">${r.num}</td>
+          <td><span class="tag ${r.relation}">${r.relation==='family'?'家族':'友達'}</span></td>
+        </tr>`).join('')}
+      </table>
+
+      <div class="notify-banner">
+        <span class="emoji">📣</span>
+        <span>上の番号は<b>1人ずつ違う番号</b>です。追加する招待者ご本人お一人お一人に、それぞれの番号を必ず個別にお伝えください。</span>
+      </div>
+
+      <div class="screenshot-banner">
+        <span class="emoji">📸</span>
+        <span>この画面をスクリーンショットしておきましょう。Formsの再登録時に使えます。</span>
+      </div>
+
+      ${formsCtaHTML('すべての情報(既存の番号もあわせて全員分)を、Microsoft Formsに再登録してください。')}
+    `;
+  } else {
+    const delNum = document.getElementById('delFull').value.trim().toUpperCase();
+    if(!/^\d{7}[1-5]$/.test(delNum)){ err.textContent = '①には8桁の数字(先頭7桁+末尾1桁の枝番1〜5)でフルに入力してください。例: 23158471'; return; }
+
+    box.style.display = 'block';
+    box.innerHTML = `
+      <div class="base">削除する番号</div>
+      <div class="base-number">${delNum}</div>
+
+      ${formsCtaHTML(`削除した番号(${delNum})以外の情報を、Microsoft Formsに再登録してください。`)}
+    `;
+  }
+}
+
+renderGuests();
+populateAddCountOptions();
+</script>
+</body>
+</html>
